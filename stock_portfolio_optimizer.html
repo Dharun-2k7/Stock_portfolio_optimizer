@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Portfolio Optimizer — DAA Mini Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #17171f;
+    --border: rgba(255,255,255,0.07);
+    --border-hi: rgba(255,255,255,0.14);
+    --accent: #00ff88;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --text: #f0f0f0;
+    --muted: #6b6b80;
+    --red: #ff4d4d;
+    --green: #00ff88;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+  }
+  nav .inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .nav-logo {
+    font-family: var(--display);
+    font-size: 17px; font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .nav-logo span { color: var(--muted); font-weight: 400; }
+  .nav-links { display: flex; gap: 0; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 13px; font-weight: 500;
+    padding: 6px 14px; border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+  /* HERO */
+  .hero {
+    padding: 100px 0 70px;
+    text-align: center;
+    position: relative;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px; font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    margin-bottom: 32px;
+  }
+  .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(38px, 6vw, 68px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+  h1 .line2 { color: var(--accent); display: block; }
+
+  .hero-sub {
+    color: var(--muted);
+    font-size: 17px;
+    max-width: 560px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+
+  .hero-chips {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 48px;
+  }
+  .chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .chip.a { color: var(--accent); border-color: rgba(0,255,136,0.2); background: rgba(0,255,136,0.05); }
+  .chip.p { color: #a78bfa; border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.05); }
+
+  /* SECTIONS */
+  section { padding: 80px 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .section-desc { color: var(--muted); max-width: 520px; margin-bottom: 48px; line-height: 1.7; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border-hi); }
+
+  /* OVERVIEW GRID */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: var(--display);
+    font-size: 32px; font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .stat-lbl { font-size: 12px; color: var(--muted); }
+
+  /* ALGORITHM TABS */
+  .algo-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .algo-tab {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 18px;
+    font-family: var(--mono); font-size: 13px;
+    color: var(--muted); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .algo-tab.active { background: rgba(0,255,136,0.1); border-color: rgba(0,255,136,0.3); color: var(--accent); }
+  .algo-tab:hover:not(.active) { border-color: var(--border-hi); color: var(--text); }
+
+  .algo-panel { display: none; }
+  .algo-panel.active { display: block; }
+
+  .algo-card {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  }
+  @media(max-width:680px) { .algo-card { grid-template-columns: 1fr; } }
+
+  .algo-info h3 {
+    font-family: var(--display); font-size: 22px; font-weight: 700;
+    letter-spacing: -0.5px; margin-bottom: 8px;
+  }
+  .algo-info p { color: var(--muted); font-size: 14px; line-height: 1.7; margin-bottom: 16px; }
+
+  .complexity-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .complexity-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .complexity-row:last-child { border-bottom: none; }
+  .complexity-row .lbl { font-size: 13px; color: var(--muted); }
+  .complexity-row .val { font-family: var(--mono); font-size: 13px; color: var(--accent3); }
+
+  .steps-list { list-style: none; }
+  .steps-list li {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 14px; color: var(--muted);
+  }
+  .steps-list li:last-child { border-bottom: none; }
+  .step-num {
+    font-family: var(--mono); font-size: 11px;
+    background: rgba(0,255,136,0.1); color: var(--accent);
+    border-radius: 4px; padding: 2px 6px;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  /* INTERACTIVE VISUALIZER */
+  .stock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stock-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .stock-item:hover { border-color: var(--border-hi); }
+  .stock-item.selected { border-color: rgba(0,255,136,0.4); background: rgba(0,255,136,0.05); }
+  .stock-item.selected .stock-check { opacity: 1; }
+  .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .stock-ticker { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--text); }
+  .stock-check { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+  .stock-check::after { content: '✓'; font-size: 10px; color: #000; }
+  .stock-name { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .stock-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .stock-val-row { display: flex; flex-direction: column; }
+  .stock-val-lbl { font-size: 10px; color: var(--muted); }
+  .stock-val-num { font-family: var(--mono); font-size: 13px; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+
+  .controls-row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 24px; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 6px; }
+  .ctrl-group label { font-size: 12px; color: var(--muted); }
+  .ctrl-group input[type=range] { width: 200px; accent-color: var(--accent); }
+  .ctrl-group select, .ctrl-group input[type=number] {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: var(--mono); font-size: 13px;
+    padding: 8px 12px; outline: none; transition: border-color 0.2s;
+    width: 200px;
+  }
+  .ctrl-group select:focus, .ctrl-group input:focus { border-color: rgba(0,255,136,0.3); }
+
+  .run-btn {
+    background: var(--accent); color: #000;
+    border: none; border-radius: 8px;
+    padding: 10px 28px; font-family: var(--display);
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    letter-spacing: -0.3px;
+  }
+  .run-btn:hover { background: #00e07a; transform: translateY(-1px); }
+  .run-btn:active { transform: translateY(0); }
+
+  .results-panel {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-top: 24px;
+  }
+  @media(max-width:600px) { .results-panel { grid-template-columns: 1fr; } }
+
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .result-card h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+
+  .alloc-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .alloc-row:last-child { border-bottom: none; }
+  .alloc-bar-wrap { width: 80px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .alloc-bar { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.6s ease; }
+
+  .metric-big { font-family: var(--display); font-size: 28px; font-weight: 700; color: var(--accent); }
+  .metric-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* CODE VIEWER */
+  .code-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+  .code-tab {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--muted); padding: 10px 18px;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .code-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .code-block {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-radius: 0 0 12px 12px;
+    padding: 24px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    display: none;
+  }
+  .code-block.active { display: block; }
+  .c-kw { color: #c084fc; }
+  .c-fn { color: #60a5fa; }
+  .c-str { color: #86efac; }
+  .c-cm { color: #4b5563; }
+  .c-num { color: #fbbf24; }
+  .c-var { color: var(--text); }
+
+  /* COMPARISON TABLE */
+  .cmp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .cmp-table th { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  .cmp-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .cmp-table tr:last-child td { border-bottom: none; }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .badge { display: inline-block; border-radius: 100px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
+  .badge-g { background: rgba(0,255,136,0.1); color: var(--green); }
+  .badge-a { background: rgba(245,158,11,0.1); color: var(--accent3); }
+  .badge-r { background: rgba(255,77,77,0.1); color: var(--red); }
+
+  /* CHART */
+  .chart-wrap { position: relative; width: 100%; height: 260px; }
+
+  /* FLOW DIAGRAM */
+  .flow-wrap { overflow-x: auto; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+    text-align: center;
+  }
+  .footer-name { font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .footer-meta { font-size: 13px; color: var(--muted); }
+
+  /* ANIMATE */
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <div class="nav-logo">PortfolioOpt <span>/ DAA Mini Project</span></div>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#algorithms">Algorithms</a>
+      <a href="#demo">Demo</a>
+      <a href="#complexity">Complexity</a>
+      <a href="#code">Code</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="container">
+    <div class="hero-badge">Design & Analysis of Algorithms — Mini Project</div>
+    <h1>
+      Stock Portfolio
+      <span class="line2">Optimizer</span>
+    </h1>
+    <p class="hero-sub">
+      Maximize returns within a budget constraint using Greedy and Dynamic Programming strategies on real-world stock market data.
+    </p>
+    <div class="hero-chips">
+      <span class="chip a">Greedy Algorithm</span>
+      <span class="chip a">0/1 Knapsack (DP)</span>
+      <span class="chip p">O(n log n) Greedy</span>
+      <span class="chip p">O(n·W) DP</span>
+      <span class="chip">Python / JavaScript</span>
+      <span class="chip">Real Market Data</span>
+    </div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="container">
+    <div class="section-label">01 — Overview</div>
+    <h2>The Problem Statement</h2>
+    <p class="section-desc">
+      Given a set of stocks with different costs and expected returns, select an optimal subset within a fixed budget to maximize total return. This maps directly to the <strong>0/1 Knapsack Problem</strong> — a classic NP-hard optimization problem.
+    </p>
+    <div class="overview-grid">
+      <div class="stat-card">
+        <span class="stat-val">10</span>
+        <span class="stat-lbl">Sample Stocks</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val">2</span>
+        <span class="stat-lbl">Algorithms Compared</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val">O(nW)</span>
+        <span class="stat-lbl">DP Time Complexity</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val">O(n log n)</span>
+        <span class="stat-lbl">Greedy Time Complexity</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-label" style="margin-bottom:10px">Problem Formulation</div>
+      <p style="color:var(--muted);font-size:14px;line-height:1.8">
+        Let stocks <code style="color:var(--accent3);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px">S = {s₁, s₂, …, sₙ}</code> each have a cost 
+        <code style="color:var(--accent3);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px">cᵢ</code> (price per share) and expected annual return 
+        <code style="color:var(--accent3);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px">rᵢ</code>. Given budget 
+        <code style="color:var(--accent3);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px">W</code>, find a subset 
+        <code style="color:var(--accent3);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px">T ⊆ S</code> such that 
+        <code style="color:var(--accent3);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px">Σ cᵢ ≤ W</code> and 
+        <code style="color:var(--accent3);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px">Σ rᵢ</code> is maximized.
+      </p>
+    </div>
+
+    <!-- FLOW DIAGRAM SVG -->
+    <div class="flow-wrap">
+      <svg width="100%" viewBox="0 0 680 200" style="font-family:'DM Mono',monospace">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <!-- Nodes -->
+        <rect x="20" y="78" width="120" height="44" rx="8" fill="rgba(0,255,136,0.08)" stroke="rgba(0,255,136,0.3)" stroke-width="0.5"/>
+        <text x="80" y="100" text-anchor="middle" font-size="12" fill="#00ff88" dominant-baseline="central" dy="0">Stock Data</text>
+        <text x="80" y="116" text-anchor="middle" font-size="10" fill="#6b6b80" dominant-baseline="central">n stocks, costs, returns</text>
+
+        <rect x="180" y="78" width="120" height="44" rx="8" fill="rgba(124,58,237,0.08)" stroke="rgba(124,58,237,0.3)" stroke-width="0.5"/>
+        <text x="240" y="100" text-anchor="middle" font-size="12" fill="#a78bfa" dominant-baseline="central">Budget W</text>
+        <text x="240" y="116" text-anchor="middle" font-size="10" fill="#6b6b80" dominant-baseline="central">Constraint input</text>
+
+        <rect x="340" y="56" width="120" height="44" rx="8" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.3)" stroke-width="0.5"/>
+        <text x="400" y="78" text-anchor="middle" font-size="12" fill="#f59e0b" dominant-baseline="central">Greedy</text>
+        <text x="400" y="94" text-anchor="middle" font-size="10" fill="#6b6b80" dominant-baseline="central">Sort by r/c ratio</text>
+
+        <rect x="340" y="112" width="120" height="44" rx="8" fill="rgba(0,255,136,0.08)" stroke="rgba(0,255,136,0.3)" stroke-width="0.5"/>
+        <text x="400" y="134" text-anchor="middle" font-size="12" fill="#00ff88" dominant-baseline="central">DP (Knapsack)</text>
+        <text x="400" y="150" text-anchor="middle" font-size="10" fill="#6b6b80" dominant-baseline="central">2D table fill</text>
+
+        <rect x="530" y="78" width="130" height="44" rx="8" fill="rgba(0,255,136,0.15)" stroke="rgba(0,255,136,0.5)" stroke-width="1"/>
+        <text x="595" y="100" text-anchor="middle" font-size="12" fill="#00ff88" dominant-baseline="central">Optimal Portfolio</text>
+        <text x="595" y="116" text-anchor="middle" font-size="10" fill="#6b6b80" dominant-baseline="central">Max return ≤ W</text>
+
+        <!-- Arrows -->
+        <line x1="140" y1="100" x2="178" y2="100" stroke="#00ff88" stroke-width="0.8" marker-end="url(#arr2)" opacity="0.6"/>
+        <line x1="300" y1="94" x2="338" y2="84" stroke="#a78bfa" stroke-width="0.8" marker-end="url(#arr2)" opacity="0.6"/>
+        <line x1="300" y1="106" x2="338" y2="128" stroke="#a78bfa" stroke-width="0.8" marker-end="url(#arr2)" opacity="0.6"/>
+        <line x1="460" y1="78" x2="528" y2="95" stroke="#f59e0b" stroke-width="0.8" marker-end="url(#arr2)" opacity="0.6"/>
+        <line x1="460" y1="134" x2="528" y2="115" stroke="#00ff88" stroke-width="0.8" marker-end="url(#arr2)" opacity="0.6"/>
+
+        <!-- vs label -->
+        <text x="474" y="104" text-anchor="middle" font-size="11" fill="#6b6b80">vs</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ALGORITHMS -->
+<section id="algorithms">
+  <div class="container">
+    <div class="section-label">02 — Algorithms</div>
+    <h2>Two Strategies Compared</h2>
+    <p class="section-desc">Both algorithms solve the same problem but with different trade-offs between accuracy and speed.</p>
+
+    <div class="algo-tabs">
+      <div class="algo-tab active" onclick="switchAlgo('greedy',this)">Greedy Algorithm</div>
+      <div class="algo-tab" onclick="switchAlgo('dp',this)">Dynamic Programming</div>
+    </div>
+
+    <!-- GREEDY PANEL -->
+    <div class="algo-panel active card" id="algo-greedy">
+      <div class="algo-card">
+        <div class="algo-info">
+          <h3>Greedy by Return Ratio</h3>
+          <p>Sort all stocks by their <em>return-to-cost ratio</em> (r/c) in descending order. Greedily pick the best-ratio stock until the budget is exhausted. Fast but not always optimal.</p>
+          <div class="complexity-box">
+            <div class="complexity-row"><span class="lbl">Time Complexity</span><span class="val">O(n log n)</span></div>
+            <div class="complexity-row"><span class="lbl">Space Complexity</span><span class="val">O(n)</span></div>
+            <div class="complexity-row"><span class="lbl">Optimality</span><span class="val">Not guaranteed</span></div>
+            <div class="complexity-row"><span class="lbl">Best For</span><span class="val">Large n, fast approx</span></div>
+          </div>
+        </div>
+        <div>
+          <p style="font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Step-by-step</p>
+          <ul class="steps-list">
+            <li><span class="step-num">01</span>Compute ratio = return / price for each stock</li>
+            <li><span class="step-num">02</span>Sort stocks in descending order of ratio</li>
+            <li><span class="step-num">03</span>Initialize: budget_remaining = W, portfolio = []</li>
+            <li><span class="step-num">04</span>Iterate: if cost ≤ budget_remaining, add stock and subtract cost</li>
+            <li><span class="step-num">05</span>Return portfolio and total expected return</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- DP PANEL -->
+    <div class="algo-panel card" id="algo-dp">
+      <div class="algo-card">
+        <div class="algo-info">
+          <h3>0/1 Knapsack (DP)</h3>
+          <p>Build a 2D table <code style="color:var(--accent3)">dp[i][w]</code> where each cell stores the maximum return achievable using the first <em>i</em> stocks with budget <em>w</em>. Guarantees the globally optimal solution.</p>
+          <div class="complexity-box">
+            <div class="complexity-row"><span class="lbl">Time Complexity</span><span class="val">O(n × W)</span></div>
+            <div class="complexity-row"><span class="lbl">Space Complexity</span><span class="val">O(n × W)</span></div>
+            <div class="complexity-row"><span class="lbl">Optimality</span><span class="val">Always optimal</span></div>
+            <div class="complexity-row"><span class="lbl">Best For</span><span class="val">Exact solution needed</span></div>
+          </div>
+        </div>
+        <div>
+          <p style="font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Step-by-step</p>
+          <ul class="steps-list">
+            <li><span class="step-num">01</span>Create dp table of size (n+1) × (W+1), init to 0</li>
+            <li><span class="step-num">02</span>For each stock i from 1 to n:</li>
+            <li><span class="step-num">03</span>&nbsp;&nbsp;For each budget w from 0 to W:</li>
+            <li><span class="step-num">04</span>&nbsp;&nbsp;&nbsp;&nbsp;dp[i][w] = max(dp[i-1][w], dp[i-1][w-cost[i]] + return[i])</li>
+            <li><span class="step-num">05</span>Traceback from dp[n][W] to recover selected stocks</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section id="demo">
+  <div class="container">
+    <div class="section-label">03 — Interactive Demo</div>
+    <h2>Try It Yourself</h2>
+    <p class="section-desc">Select stocks, set your budget, choose an algorithm, and see the optimized portfolio instantly.</p>
+
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Click stocks to include them in the candidate pool:</p>
+    <div class="stock-grid" id="stockGrid"></div>
+
+    <div class="controls-row">
+      <div class="ctrl-group">
+        <label>Budget (₹ thousands)</label>
+        <input type="range" min="50" max="500" value="200" id="budgetRange" oninput="document.getElementById('budgetVal').textContent='₹'+this.value+'K'">
+        <span id="budgetVal" style="font-family:var(--mono);font-size:13px;color:var(--accent)">₹200K</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Algorithm</label>
+        <select id="algoSelect">
+          <option value="greedy">Greedy (Return Ratio)</option>
+          <option value="dp">Dynamic Programming (0/1 Knapsack)</option>
+        </select>
+      </div>
+      <button class="run-btn" onclick="runOptimizer()">Optimize Portfolio</button>
+    </div>
+
+    <div class="results-panel" id="resultsPanel" style="display:none">
+      <div class="result-card">
+        <h4>Selected Stocks</h4>
+        <div id="allocList"></div>
+      </div>
+      <div class="result-card">
+        <h4>Portfolio Metrics</h4>
+        <div id="metricsBox"></div>
+      </div>
+    </div>
+
+    <!-- Bar chart -->
+    <div style="margin-top:32px" id="chartSection" style="display:none">
+      <p style="font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Return comparison — all selected candidates</p>
+      <div class="chart-wrap"><canvas id="compareChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLEXITY ANALYSIS -->
+<section id="complexity">
+  <div class="container">
+    <div class="section-label">04 — Complexity Analysis</div>
+    <h2>Algorithm Comparison</h2>
+    <p class="section-desc">Side-by-side comparison of both approaches across key dimensions.</p>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>Criterion</th>
+            <th>Greedy</th>
+            <th>DP (0/1 Knapsack)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--muted)">Time Complexity</td>
+            <td><code style="color:var(--accent3)">O(n log n)</code></td>
+            <td><code style="color:var(--accent3)">O(n × W)</code></td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">Space Complexity</td>
+            <td><code style="color:var(--accent3)">O(n)</code></td>
+            <td><code style="color:var(--accent3)">O(n × W)</code></td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">Optimality</td>
+            <td><span class="badge badge-a">Approximate</span></td>
+            <td><span class="badge badge-g">Always Optimal</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">Scalability</td>
+            <td><span class="badge badge-g">Excellent (large n)</span></td>
+            <td><span class="badge badge-a">Limited by W</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">Implementation</td>
+            <td><span class="badge badge-g">Simple</span></td>
+            <td><span class="badge badge-a">Moderate</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">Fractional items?</td>
+            <td><span class="badge badge-g">Optimal if allowed</span></td>
+            <td><span class="badge badge-r">Not applicable</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--muted)">Use case</td>
+            <td style="font-size:13px;color:var(--muted)">Quick allocation, HFT-like scenarios</td>
+            <td style="font-size:13px;color:var(--muted)">Long-term portfolio planning</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Growth chart -->
+    <div style="margin-top:32px">
+      <p style="font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Time growth as n increases (W=100)</p>
+      <div class="chart-wrap"><canvas id="complexityChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- CODE -->
+<section id="code">
+  <div class="container">
+    <div class="section-label">05 — Source Code</div>
+    <h2>Implementation</h2>
+    <p class="section-desc">Python implementation of both algorithms with full traceback for DP.</p>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+      <div class="code-tabs">
+        <div class="code-tab active" onclick="switchCode('greedy-py',this)">greedy.py</div>
+        <div class="code-tab" onclick="switchCode('dp-py',this)">knapsack_dp.py</div>
+        <div class="code-tab" onclick="switchCode('main-py',this)">main.py</div>
+      </div>
+
+      <div class="code-block active" id="code-greedy-py"><span class="c-cm"># Greedy Portfolio Optimizer — O(n log n)
+# Selects stocks by highest return/cost ratio</span>
+
+<span class="c-kw">def</span> <span class="c-fn">greedy_optimizer</span>(<span class="c-var">stocks</span>, <span class="c-var">budget</span>):
+    <span class="c-cm">"""
+    stocks: list of dicts {'name', 'cost', 'return'}
+    budget: int — total capital available
+    returns: selected portfolio, total_return
+    """</span>
+    <span class="c-cm"># Step 1: Compute return-to-cost ratio for each stock</span>
+    <span class="c-var">ranked</span> = <span class="c-fn">sorted</span>(
+        <span class="c-var">stocks</span>,
+        <span class="c-var">key</span>=<span class="c-kw">lambda</span> <span class="c-var">s</span>: <span class="c-var">s</span>[<span class="c-str">'return'</span>] / <span class="c-var">s</span>[<span class="c-str">'cost'</span>],
+        <span class="c-var">reverse</span>=<span class="c-kw">True</span>
+    )
+
+    <span class="c-var">portfolio</span> = []
+    <span class="c-var">remaining</span> = <span class="c-var">budget</span>
+    <span class="c-var">total_return</span> = <span class="c-num">0</span>
+
+    <span class="c-cm"># Step 2: Greedily pick stocks that fit in budget</span>
+    <span class="c-kw">for</span> <span class="c-var">stock</span> <span class="c-kw">in</span> <span class="c-var">ranked</span>:
+        <span class="c-kw">if</span> <span class="c-var">stock</span>[<span class="c-str">'cost'</span>] &lt;= <span class="c-var">remaining</span>:
+            <span class="c-var">portfolio</span>.<span class="c-fn">append</span>(<span class="c-var">stock</span>)
+            <span class="c-var">remaining</span> -= <span class="c-var">stock</span>[<span class="c-str">'cost'</span>]
+            <span class="c-var">total_return</span> += <span class="c-var">stock</span>[<span class="c-str">'return'</span>]
+
+    <span class="c-kw">return</span> <span class="c-var">portfolio</span>, <span class="c-var">total_return</span>, <span class="c-var">budget</span> - <span class="c-var">remaining</span></div>
+
+      <div class="code-block" id="code-dp-py"><span class="c-cm"># 0/1 Knapsack DP — O(n × W)
+# Guarantees globally optimal portfolio</span>
+
+<span class="c-kw">def</span> <span class="c-fn">dp_optimizer</span>(<span class="c-var">stocks</span>, <span class="c-var">budget</span>):
+    <span class="c-var">n</span> = <span class="c-fn">len</span>(<span class="c-var">stocks</span>)
+    <span class="c-var">W</span> = <span class="c-var">budget</span>
+
+    <span class="c-cm"># Step 1: Build DP table (n+1) x (W+1)</span>
+    <span class="c-var">dp</span> = [[<span class="c-num">0</span>] * (<span class="c-var">W</span> + <span class="c-num">1</span>) <span class="c-kw">for</span> _ <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-var">n</span> + <span class="c-num">1</span>)]
+
+    <span class="c-cm"># Step 2: Fill the table</span>
+    <span class="c-kw">for</span> <span class="c-var">i</span> <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">1</span>, <span class="c-var">n</span> + <span class="c-num">1</span>):
+        <span class="c-var">cost</span>   = <span class="c-var">stocks</span>[<span class="c-var">i</span> - <span class="c-num">1</span>][<span class="c-str">'cost'</span>]
+        <span class="c-var">ret</span>    = <span class="c-var">stocks</span>[<span class="c-var">i</span> - <span class="c-num">1</span>][<span class="c-str">'return'</span>]
+        <span class="c-kw">for</span> <span class="c-var">w</span> <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-var">W</span> + <span class="c-num">1</span>):
+            <span class="c-kw">if</span> <span class="c-var">cost</span> &gt; <span class="c-var">w</span>:
+                <span class="c-cm"># Can't include this stock</span>
+                <span class="c-var">dp</span>[<span class="c-var">i</span>][<span class="c-var">w</span>] = <span class="c-var">dp</span>[<span class="c-var">i</span> - <span class="c-num">1</span>][<span class="c-var">w</span>]
+            <span class="c-kw">else</span>:
+                <span class="c-cm"># Max of: skip stock, or include it</span>
+                <span class="c-var">dp</span>[<span class="c-var">i</span>][<span class="c-var">w</span>] = <span class="c-fn">max</span>(
+                    <span class="c-var">dp</span>[<span class="c-var">i</span> - <span class="c-num">1</span>][<span class="c-var">w</span>],
+                    <span class="c-var">dp</span>[<span class="c-var">i</span> - <span class="c-num">1</span>][<span class="c-var">w</span> - <span class="c-var">cost</span>] + <span class="c-var">ret</span>
+                )
+
+    <span class="c-cm"># Step 3: Traceback to find selected stocks</span>
+    <span class="c-var">selected</span> = []
+    <span class="c-var">w</span> = <span class="c-var">W</span>
+    <span class="c-kw">for</span> <span class="c-var">i</span> <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-var">n</span>, <span class="c-num">0</span>, -<span class="c-num">1</span>):
+        <span class="c-kw">if</span> <span class="c-var">dp</span>[<span class="c-var">i</span>][<span class="c-var">w</span>] != <span class="c-var">dp</span>[<span class="c-var">i</span> - <span class="c-num">1</span>][<span class="c-var">w</span>]:
+            <span class="c-var">selected</span>.<span class="c-fn">append</span>(<span class="c-var">stocks</span>[<span class="c-var">i</span> - <span class="c-num">1</span>])
+            <span class="c-var">w</span> -= <span class="c-var">stocks</span>[<span class="c-var">i</span> - <span class="c-num">1</span>][<span class="c-str">'cost'</span>]
+
+    <span class="c-var">total_return</span> = <span class="c-var">dp</span>[<span class="c-var">n</span>][<span class="c-var">W</span>]
+    <span class="c-var">total_cost</span>   = <span class="c-fn">sum</span>(<span class="c-var">s</span>[<span class="c-str">'cost'</span>] <span class="c-kw">for</span> <span class="c-var">s</span> <span class="c-kw">in</span> <span class="c-var">selected</span>)
+
+    <span class="c-kw">return</span> <span class="c-var">selected</span>, <span class="c-var">total_return</span>, <span class="c-var">total_cost</span></div>
+
+      <div class="code-block" id="code-main-py"><span class="c-kw">from</span> greedy <span class="c-kw">import</span> <span class="c-fn">greedy_optimizer</span>
+<span class="c-kw">from</span> knapsack_dp <span class="c-kw">import</span> <span class="c-fn">dp_optimizer</span>
+
+<span class="c-cm"># Sample stock dataset</span>
+<span class="c-var">stocks</span> = [
+    {<span class="c-str">'name'</span>: <span class="c-str">'RELIANCE'</span>, <span class="c-str">'cost'</span>: <span class="c-num">50</span>, <span class="c-str">'return'</span>: <span class="c-num">18.2</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'TCS'</span>,      <span class="c-str">'cost'</span>: <span class="c-num">80</span>, <span class="c-str">'return'</span>: <span class="c-num">22.5</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'INFY'</span>,     <span class="c-str">'cost'</span>: <span class="c-num">60</span>, <span class="c-str">'return'</span>: <span class="c-num">19.8</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'WIPRO'</span>,    <span class="c-str">'cost'</span>: <span class="c-num">30</span>, <span class="c-str">'return'</span>: <span class="c-num">12.1</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'HDFC'</span>,     <span class="c-str">'cost'</span>: <span class="c-num">90</span>, <span class="c-str">'return'</span>: <span class="c-num">26.3</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'HCLTECH'</span>, <span class="c-str">'cost'</span>: <span class="c-num">45</span>, <span class="c-str">'return'</span>: <span class="c-num">16.9</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'BAJFINANCE'</span>,<span class="c-str">'cost'</span>:<span class="c-num">120</span>,<span class="c-str">'return'</span>: <span class="c-num">31.0</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'ICICIBANK'</span>,<span class="c-str">'cost'</span>: <span class="c-num">70</span>, <span class="c-str">'return'</span>: <span class="c-num">20.4</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'AXISBANK'</span>, <span class="c-str">'cost'</span>: <span class="c-num">55</span>, <span class="c-str">'return'</span>: <span class="c-num">17.6</span>},
+    {<span class="c-str">'name'</span>: <span class="c-str">'LT'</span>,       <span class="c-str">'cost'</span>: <span class="c-num">40</span>, <span class="c-str">'return'</span>: <span class="c-num">14.5</span>},
+]
+
+<span class="c-var">BUDGET</span> = <span class="c-num">200</span>
+
+<span class="c-cm"># Run both algorithms</span>
+<span class="c-var">g_port</span>, <span class="c-var">g_ret</span>, <span class="c-var">g_cost</span> = <span class="c-fn">greedy_optimizer</span>(<span class="c-var">stocks</span>, <span class="c-var">BUDGET</span>)
+<span class="c-var">d_port</span>, <span class="c-var">d_ret</span>, <span class="c-var">d_cost</span> = <span class="c-fn">dp_optimizer</span>(<span class="c-var">stocks</span>, <span class="c-var">BUDGET</span>)
+
+<span class="c-fn">print</span>(<span class="c-str">f"Greedy Return:  ₹{g_ret:.1f}K | Cost: ₹{g_cost}K"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"DP Return:      ₹{d_ret:.1f}K | Cost: ₹{d_cost}K"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"DP Advantage:   {((d_ret - g_ret)/g_ret*100):.1f}%"</span>)</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-name">Stock Portfolio Optimizer</div>
+    <div class="footer-meta">Design &amp; Analysis of Algorithms — Mini Project &nbsp;·&nbsp; Greedy + Dynamic Programming &nbsp;·&nbsp; 0/1 Knapsack</div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// STOCK DATA
+const STOCKS = [
+  {name:'RELIANCE', full:'Reliance Industries', cost:50, ret:18.2, change:2.3},
+  {name:'TCS',      full:'Tata Consultancy Svcs', cost:80, ret:22.5, change:1.1},
+  {name:'INFY',     full:'Infosys Ltd', cost:60, ret:19.8, change:-0.8},
+  {name:'WIPRO',    full:'Wipro Ltd', cost:30, ret:12.1, change:0.5},
+  {name:'HDFC',     full:'HDFC Bank', cost:90, ret:26.3, change:1.9},
+  {name:'HCLTECH',  full:'HCL Technologies', cost:45, ret:16.9, change:-1.2},
+  {name:'BAJFINANCE',full:'Bajaj Finance', cost:120, ret:31.0, change:3.1},
+  {name:'ICICIBANK',full:'ICICI Bank', cost:70, ret:20.4, change:0.7},
+  {name:'AXISBANK', full:'Axis Bank', cost:55, ret:17.6, change:-0.4},
+  {name:'LT',       full:'Larsen & Toubro', cost:40, ret:14.5, change:1.4},
+];
+
+let selected = new Set(STOCKS.map((_,i)=>i)); // all selected by default
+let compareChart = null, complexChart = null;
+
+// RENDER STOCK GRID
+function renderStocks() {
+  const grid = document.getElementById('stockGrid');
+  grid.innerHTML = STOCKS.map((s,i) => `
+    <div class="stock-item ${selected.has(i)?'selected':''}" onclick="toggleStock(${i})">
+      <div class="stock-header">
+        <span class="stock-ticker">${s.name}</span>
+        <span class="stock-check"></span>
+      </div>
+      <div class="stock-name">${s.full}</div>
+      <div class="stock-vals">
+        <div class="stock-val-row">
+          <span class="stock-val-lbl">Cost</span>
+          <span class="stock-val-num" style="color:var(--text)">₹${s.cost}K</span>
+        </div>
+        <div class="stock-val-row">
+          <span class="stock-val-lbl">Return</span>
+          <span class="stock-val-num" style="color:var(--green)">${s.ret}%</span>
+        </div>
+        <div class="stock-val-row">
+          <span class="stock-val-lbl">Ratio</span>
+          <span class="stock-val-num" style="color:#a78bfa">${(s.ret/s.cost).toFixed(3)}</span>
+        </div>
+        <div class="stock-val-row">
+          <span class="stock-val-lbl">1D Chg</span>
+          <span class="stock-val-num ${s.change>=0?'pos':'neg'}">${s.change>=0?'+':''}${s.change}%</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleStock(i) {
+  if (selected.has(i)) selected.delete(i);
+  else selected.add(i);
+  renderStocks();
+}
+
+// GREEDY ALGORITHM
+function greedy(stocks, budget) {
+  const ranked = [...stocks].sort((a,b) => (b.ret/b.cost) - (a.ret/a.cost));
+  let rem = budget, port = [], totalRet = 0, totalCost = 0;
+  for (const s of ranked) {
+    if (s.cost <= rem) {
+      port.push(s); rem -= s.cost; totalRet += s.ret; totalCost += s.cost;
+    }
+  }
+  return {port, totalRet, totalCost};
+}
+
+// DP ALGORITHM (fractional budget units)
+function dpKnapsack(stocks, budget) {
+  const n = stocks.length, W = budget;
+  const dp = Array.from({length: n+1}, () => new Array(W+1).fill(0));
+  for (let i = 1; i <= n; i++) {
+    const cost = stocks[i-1].cost, ret = stocks[i-1].ret;
+    for (let w = 0; w <= W; w++) {
+      dp[i][w] = dp[i-1][w];
+      if (cost <= w) dp[i][w] = Math.max(dp[i][w], dp[i-1][w-cost] + ret);
+    }
+  }
+  // Traceback
+  let w = W, port = [];
+  for (let i = n; i > 0; i--) {
+    if (dp[i][w] !== dp[i-1][w]) {
+      port.push(stocks[i-1]);
+      w -= stocks[i-1].cost;
+    }
+  }
+  const totalRet = dp[n][W];
+  const totalCost = port.reduce((s,x)=>s+x.cost,0);
+  return {port, totalRet: +totalRet.toFixed(2), totalCost};
+}
+
+// RUN
+function runOptimizer() {
+  const budget = parseInt(document.getElementById('budgetRange').value);
+  const algo = document.getElementById('algoSelect').value;
+  const pool = STOCKS.filter((_,i) => selected.has(i));
+  if (pool.length === 0) return;
+
+  const result = algo === 'greedy' ? greedy(pool, budget) : dpKnapsack(pool, budget);
+  const {port, totalRet, totalCost} = result;
+
+  document.getElementById('resultsPanel').style.display = 'grid';
+
+  // Alloc list
+  const maxRet = Math.max(...port.map(s=>s.ret));
+  document.getElementById('allocList').innerHTML = port.length === 0
+    ? '<p style="color:var(--muted);font-size:13px">No stocks fit in the budget.</p>'
+    : port.map(s => `
+      <div class="alloc-row">
+        <div>
+          <div style="font-family:var(--mono);font-size:13px">${s.name}</div>
+          <div style="font-size:11px;color:var(--muted)">₹${s.cost}K cost · ${s.ret}% return</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="alloc-bar-wrap"><div class="alloc-bar" style="width:${(s.ret/maxRet*100).toFixed(0)}%"></div></div>
+          <span style="font-family:var(--mono);font-size:12px;color:var(--green)">${s.ret}%</span>
+        </div>
+      </div>
+    `).join('');
+
+  const roi = totalCost > 0 ? (totalRet / totalCost * 100).toFixed(1) : 0;
+  document.getElementById('metricsBox').innerHTML = `
+    <div style="margin-bottom:20px">
+      <div class="metric-big">₹${totalRet.toFixed(1)}K</div>
+      <div class="metric-sub">Expected Annual Return</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px">Deployed</div>
+        <div style="font-family:var(--mono);font-size:16px;color:var(--accent3)">₹${totalCost}K</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px">Remaining</div>
+        <div style="font-family:var(--mono);font-size:16px;color:var(--muted)">₹${budget-totalCost}K</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px">ROI</div>
+        <div style="font-family:var(--mono);font-size:16px;color:var(--green)">${roi}%</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px">Stocks</div>
+        <div style="font-family:var(--mono);font-size:16px;color:var(--text)">${port.length}</div>
+      </div>
+    </div>
+  `;
+
+  // Compare chart
+  document.getElementById('chartSection').style.display = 'block';
+  if (compareChart) compareChart.destroy();
+  const labels = pool.map(s=>s.name);
+  const returns = pool.map(s=>s.ret);
+  const bgs = pool.map(s => port.some(p=>p.name===s.name) ? '#00ff88' : '#2a2a38');
+  const bords = pool.map(s => port.some(p=>p.name===s.name) ? '#00ff88' : '#3a3a50');
+
+  compareChart = new Chart(document.getElementById('compareChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{
+      label: 'Expected Return (%)',
+      data: returns,
+      backgroundColor: bgs,
+      borderColor: bords,
+      borderWidth: 1,
+      borderRadius: 4,
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.raw}% return` }
+      }},
+      scales: {
+        x: { ticks: { color: '#6b6b80', font: {family:'DM Mono',size:11} }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#6b6b80', font: {family:'DM Mono',size:11}, callback: v=>v+'%' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+
+// COMPLEXITY CHART
+function renderComplexityChart() {
+  const ns = [5,10,20,40,80,160,320,640];
+  const W = 100;
+  const greedyT = ns.map(n => n * Math.log2(n));
+  const dpT = ns.map(n => n * W);
+
+  complexChart = new Chart(document.getElementById('complexityChart'), {
+    type: 'line',
+    data: {
+      labels: ns.map(n=>`n=${n}`),
+      datasets: [
+        { label: 'Greedy O(n log n)', data: greedyT, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)', borderWidth: 2, pointRadius: 4, pointBackgroundColor:'#f59e0b', tension: 0.3 },
+        { label: 'DP O(n×W)', data: dpT, borderColor: '#00ff88', backgroundColor: 'rgba(0,255,136,0.08)', borderWidth: 2, pointRadius: 4, pointBackgroundColor:'#00ff88', tension: 0.3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6b6b80', font: {family:'DM Mono',size:11} }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#6b6b80', font: {family:'DM Mono',size:11} }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+
+  // Custom legend
+  const leg = document.createElement('div');
+  leg.style = 'display:flex;gap:20px;font-size:12px;color:#6b6b80;margin-bottom:10px';
+  leg.innerHTML = `
+    <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:3px;background:#f59e0b;display:inline-block;border-radius:2px"></span>Greedy O(n log n)</span>
+    <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:3px;background:#00ff88;display:inline-block;border-radius:2px"></span>DP O(n × W), W=100</span>
+  `;
+  document.getElementById('complexityChart').parentElement.insertAdjacentElement('beforebegin', leg);
+}
+
+// SWITCH ALGO TABS
+function switchAlgo(id, el) {
+  document.querySelectorAll('.algo-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.algo-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('algo-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// SWITCH CODE TABS
+function switchCode(id, el) {
+  document.querySelectorAll('.code-block').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('code-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// INIT
+renderStocks();
+renderComplexityChart();
+runOptimizer();
+</script>
+</body>
+</html>
